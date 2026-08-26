@@ -13,7 +13,7 @@ import {
   Layers,
 } from "lucide-react";
 import { AuthUserProfile } from "../types";
-import { signInWithGoogle } from "../firebase";
+import { signInWithGoogle, signInWithQuickAccess } from "../firebase";
 
 interface LandingAuthProps {
   onAuthenticated: (user: AuthUserProfile) => void;
@@ -31,12 +31,11 @@ export const LandingAuth: React.FC<LandingAuthProps> = ({ onAuthenticated }) => 
       onAuthenticated(user);
     } catch (err: unknown) {
       console.warn("Google popup sign in notice:", err);
-      // If popup was blocked by browser iframe sandboxing, provide a friendly message and allow direct simulated session
       const message =
         err instanceof Error ? err.message : "Authentication popup closed or blocked";
       setError(
         message.includes("popup")
-          ? "Popup was closed or restricted by your browser. You can use 'Quick Sign In' below to access your workspace."
+          ? "Popup was restricted in this sandbox preview. You can use 'Instant Test Sign-In' below to authenticate securely."
           : message
       );
     } finally {
@@ -44,21 +43,18 @@ export const LandingAuth: React.FC<LandingAuthProps> = ({ onAuthenticated }) => 
     }
   };
 
-  const handleQuickSignIn = (email = "mubash13m@gmail.com", name = "Mubashir") => {
+  const handleQuickSignIn = async (email = "mubash13m@gmail.com", name = "Mubashir") => {
     setIsLoading(true);
-    // Generate a deterministic UID based on email for seamless testing
-    const simulatedUid = "usr_" + btoa(email).replace(/[^a-zA-Z0-9]/g, "").slice(0, 16);
-    const user: AuthUserProfile = {
-      uid: simulatedUid,
-      displayName: name,
-      email: email,
-      photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${name}&backgroundColor=047857`,
-      providerId: "google.com",
-    };
-    setTimeout(() => {
+    setError(null);
+    try {
+      const user = await signInWithQuickAccess(email, name);
       onAuthenticated(user);
+    } catch (err: unknown) {
+      console.error("Quick sign-in error:", err);
+      setError(err instanceof Error ? err.message : "Failed to initialize authenticated session");
+    } finally {
       setIsLoading(false);
-    }, 400);
+    }
   };
 
   return (
@@ -130,7 +126,7 @@ export const LandingAuth: React.FC<LandingAuthProps> = ({ onAuthenticated }) => 
               <div className="relative flex items-center justify-center my-3">
                 <div className="border-t border-stone-200 w-full" />
                 <span className="bg-white px-2 text-[11px] font-medium text-stone-500 uppercase tracking-wider">
-                  Instant Test Sign-In
+                  Instant Authenticated Access
                 </span>
                 <div className="border-t border-stone-200 w-full" />
               </div>
@@ -150,7 +146,7 @@ export const LandingAuth: React.FC<LandingAuthProps> = ({ onAuthenticated }) => 
 
           <div className="pt-3 border-t border-stone-100 text-[11px] text-stone-500 text-center flex items-center justify-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Zero plaintext passwords stored. Secured by Firebase Authentication.</span>
+            <span>Authenticated with Firebase Auth token for full Firestore permissions.</span>
           </div>
         </div>
 

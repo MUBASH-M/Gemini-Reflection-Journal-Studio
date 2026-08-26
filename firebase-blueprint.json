@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile and metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "email": { "type": "string", "description": "User email address" },
+        "photoURL": { "type": "string", "description": "Avatar photo URL" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastLoginAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid"]
+    },
+    "JournalEntry": {
+      "title": "JournalEntry",
+      "description": "User journal entry containing multi-turn reflections and executive summaries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique entry identifier" },
+        "userId": { "type": "string", "description": "Author user ID matching Firebase Auth UID" },
+        "title": { "type": "string", "description": "Journal entry title" },
+        "category": { "type": "string", "description": "Categorization tag" },
+        "mood": { "type": "string", "description": "User mood state" },
+        "tags": { "type": "array", "description": "Array of tags" },
+        "messages": { "type": "array", "description": "Multi-turn chat messages" },
+        "summary": { "type": "object", "description": "Executive summary" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "title", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Root user document"
+    },
+    "/users/{userId}/entries/{entryId}": {
+      "schema": "JournalEntry",
+      "description": "User-isolated collection of reflections and journal entries"
+    }
+  }
+}
