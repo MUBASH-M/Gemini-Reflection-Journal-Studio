@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. User Data Isolation: Owner-bound path checking
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /entries/{entryId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /reflections/{reflectionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /interactions/{interactionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /{allPaths=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // 2. Role-Based Access Control (RBAC): Admin audit logs
+    match /admin_audit_logs/{logId} {
+      allow read, write: if request.auth != null && (
+        request.auth.token.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    // 3. Zero Insecure Defaults: Explicit deny for all unspecified collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

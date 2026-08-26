@@ -1,0 +1,6 @@
+{
+  "name": "Gemini Reflection & Journal Studio",
+  "description": "User-authenticated AI journaling and multi-turn reflection workspace powered by Gemini 3.6 Flash and user-isolated Cloud Firestore storage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
